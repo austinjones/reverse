@@ -12,6 +12,7 @@ repository = "https://github.com/al-jshen/reverse"
 categories = ["science"]
 
 [dependencies]
+opimps = "0.1.4"
 
 [dev-dependencies]
 approx_eq = "0.1"

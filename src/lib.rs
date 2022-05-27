@@ -37,13 +37,9 @@
 //! ```
 
 #![allow(clippy::suspicious_arithmetic_impl)]
+mod ops;
 
-use std::{
-    cell::RefCell,
-    fmt::Display,
-    iter::Sum,
-    ops::{Add, Div, Mul, Neg, Sub},
-};
+use std::{cell::RefCell, fmt::Display};
 
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct Node {
@@ -85,6 +81,7 @@ impl Tape {
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
+
     pub(crate) fn add_node(&self, loc1: usize, loc2: usize, grad1: f64, grad2: f64) -> usize {
         let mut nodes = self.nodes.borrow_mut();
         let n = nodes.len();
@@ -94,6 +91,7 @@ impl Tape {
         });
         n
     }
+
     /// Add a variable with value `val` to the tape. Returns a `Var<'a>` which can be used like an `f64`.
     pub fn add_var(&self, val: f64) -> Var {
         let len = self.len();
@@ -103,10 +101,12 @@ impl Tape {
             tape: self,
         }
     }
+
     /// Add a slice of variables to the tape. See `add_var` for details.
     pub fn add_vars<'a>(&'a self, vals: &[f64]) -> Vec<Var<'a>> {
         vals.iter().map(|&x| self.add_var(x)).collect()
     }
+
     /// Zero out all the gradients in the tape.
     pub fn zero_grad(&self) {
         self.nodes
@@ -114,6 +114,7 @@ impl Tape {
             .iter_mut()
             .for_each(|n| n.weights = [0., 0.]);
     }
+
     /// Clear the tape by deleting all nodes (useful for clearing out intermediate values).
     pub fn clear(&self) {
         self.nodes.borrow_mut().clear();
@@ -131,6 +132,7 @@ impl<'a> Var<'a> {
     pub fn val(&self) -> f64 {
         self.val
     }
+
     /// Calculate the gradients of this variable with respect to all other (possibly intermediate)
     /// variables that it depends on.
     pub fn grad(&self) -> Vec<f64> {
@@ -145,6 +147,7 @@ impl<'a> Var<'a> {
 
         derivs
     }
+
     pub fn recip(&self) -> Self {
         Self {
             val: self.val.recip(),
@@ -157,6 +160,7 @@ impl<'a> Var<'a> {
             tape: self.tape,
         }
     }
+
     pub fn sin(&self) -> Self {
         Self {
             val: self.val.sin(),
@@ -166,6 +170,7 @@ impl<'a> Var<'a> {
             tape: self.tape,
         }
     }
+
     pub fn cos(&self) -> Self {
         Self {
             val: self.val.cos(),
@@ -175,6 +180,7 @@ impl<'a> Var<'a> {
             tape: self.tape,
         }
     }
+
     pub fn tan(&self) -> Self {
         Self {
             val: self.val.tan(),
@@ -187,6 +193,7 @@ impl<'a> Var<'a> {
             tape: self.tape,
         }
     }
+
     pub fn ln(&self) -> Self {
         Self {
             val: self.val.ln(),
@@ -196,6 +203,7 @@ impl<'a> Var<'a> {
             tape: self.tape,
         }
     }
+
     pub fn log(&self, base: f64) -> Self {
         Self {
             val: self.val.log(base),
@@ -208,12 +216,15 @@ impl<'a> Var<'a> {
             tape: self.tape,
         }
     }
+
     pub fn log10(&self) -> Self {
         self.log(10.)
     }
+
     pub fn log2(&self) -> Self {
         self.log(2.)
     }
+
     pub fn ln_1p(&self) -> Self {
         Self {
             val: self.val.ln_1p(),
@@ -223,6 +234,7 @@ impl<'a> Var<'a> {
             tape: self.tape,
         }
     }
+
     pub fn asin(&self) -> Self {
         Self {
             val: self.val.asin(),
@@ -235,6 +247,7 @@ impl<'a> Var<'a> {
             tape: self.tape,
         }
     }
+
     pub fn acos(&self) -> Self {
         Self {
             val: self.val.acos(),
@@ -247,6 +260,7 @@ impl<'a> Var<'a> {
             tape: self.tape,
         }
     }
+
     pub fn atan(&self) -> Self {
         Self {
             val: self.val.atan(),
@@ -259,6 +273,7 @@ impl<'a> Var<'a> {
             tape: self.tape,
         }
     }
+
     pub fn sinh(&self) -> Self {
         Self {
             val: self.val.sinh(),
@@ -268,6 +283,7 @@ impl<'a> Var<'a> {
             tape: self.tape,
         }
     }
+
     pub fn cosh(&self) -> Self {
         Self {
             val: self.val.cosh(),
@@ -277,6 +293,7 @@ impl<'a> Var<'a> {
             tape: self.tape,
         }
     }
+
     pub fn tanh(&self) -> Self {
         Self {
             val: self.val.tanh(),
@@ -289,6 +306,7 @@ impl<'a> Var<'a> {
             tape: self.tape,
         }
     }
+
     pub fn asinh(&self) -> Self {
         Self {
             val: self.val.asinh(),
@@ -301,6 +319,7 @@ impl<'a> Var<'a> {
             tape: self.tape,
         }
     }
+
     pub fn acosh(&self) -> Self {
         Self {
             val: self.val.acosh(),
@@ -313,6 +332,7 @@ impl<'a> Var<'a> {
             tape: self.tape,
         }
     }
+
     pub fn atanh(&self) -> Self {
         Self {
             val: self.val.atanh(),
@@ -325,6 +345,7 @@ impl<'a> Var<'a> {
             tape: self.tape,
         }
     }
+
     pub fn exp(&self) -> Self {
         Self {
             val: self.val.exp(),
@@ -334,6 +355,7 @@ impl<'a> Var<'a> {
             tape: self.tape,
         }
     }
+
     pub fn exp2(self) -> Self {
         Self {
             val: self.val.exp2(),
@@ -346,6 +368,7 @@ impl<'a> Var<'a> {
             tape: self.tape,
         }
     }
+
     pub fn sqrt(&self) -> Self {
         Self {
             val: self.val.sqrt(),
@@ -358,9 +381,11 @@ impl<'a> Var<'a> {
             tape: self.tape,
         }
     }
+
     pub fn cbrt(&self) -> Self {
         self.powf(1. / 3.)
     }
+
     pub fn abs(&self) -> Self {
         let val = self.val.abs();
         Self {
@@ -378,6 +403,7 @@ impl<'a> Var<'a> {
             tape: self.tape,
         }
     }
+
     pub fn powi(&self, n: i32) -> Self {
         Self {
             val: self.val.powi(n),
@@ -499,187 +525,12 @@ impl<'a, const N: usize> Gradient<&[Var<'a>; N], Vec<f64>> for Vec<f64> {
     }
 }
 
-impl<'a> Neg for Var<'a> {
-    type Output = Self;
-    fn neg(self) -> Self::Output {
-        self * -1.
-    }
-}
-
-impl<'a> Add<Var<'a>> for Var<'a> {
-    type Output = Self;
-    fn add(self, rhs: Var<'a>) -> Self::Output {
-        assert_eq!(self.tape as *const Tape, rhs.tape as *const Tape);
-        Self::Output {
-            val: self.val + rhs.val,
-            location: self.tape.add_node(self.location, rhs.location, 1., 1.),
-            tape: self.tape,
-        }
-    }
-}
-
-impl<'a> Add<f64> for Var<'a> {
-    type Output = Self;
-    fn add(self, rhs: f64) -> Self::Output {
-        Self::Output {
-            val: self.val + rhs,
-            location: self.tape.add_node(self.location, self.location, 1., 0.),
-            tape: self.tape,
-        }
-    }
-}
-
-impl<'a> Add<Var<'a>> for f64 {
-    type Output = Var<'a>;
-    fn add(self, rhs: Var<'a>) -> Self::Output {
-        rhs + self
-    }
-}
-
-impl<'a> Sub<Var<'a>> for Var<'a> {
-    type Output = Self;
-    fn sub(self, rhs: Var<'a>) -> Self::Output {
-        self.add(rhs.neg())
-    }
-}
-
-impl<'a> Sub<f64> for Var<'a> {
-    type Output = Self;
-    fn sub(self, rhs: f64) -> Self::Output {
-        self.add(rhs.neg())
-    }
-}
-
-impl<'a> Sub<Var<'a>> for f64 {
-    type Output = Var<'a>;
-    fn sub(self, rhs: Var<'a>) -> Self::Output {
-        Self::Output {
-            val: self - rhs.val,
-            location: rhs.tape.add_node(rhs.location, rhs.location, 0., -1.),
-            tape: rhs.tape,
-        }
-    }
-}
-
-impl<'a> Mul<Var<'a>> for Var<'a> {
-    type Output = Self;
-    fn mul(self, rhs: Var<'a>) -> Self::Output {
-        assert_eq!(self.tape as *const Tape, rhs.tape as *const Tape);
-        Self::Output {
-            val: self.val * rhs.val,
-            location: self
-                .tape
-                .add_node(self.location, rhs.location, rhs.val, self.val),
-            tape: self.tape,
-        }
-    }
-}
-
-impl<'a> Mul<f64> for Var<'a> {
-    type Output = Self;
-    fn mul(self, rhs: f64) -> Self::Output {
-        Self::Output {
-            val: self.val * rhs,
-            location: self.tape.add_node(self.location, self.location, rhs, 0.),
-            tape: self.tape,
-        }
-    }
-}
-
-impl<'a> Mul<Var<'a>> for f64 {
-    type Output = Var<'a>;
-    fn mul(self, rhs: Var<'a>) -> Self::Output {
-        rhs * self
-    }
-}
-
-impl<'a> Div<Var<'a>> for Var<'a> {
-    type Output = Self;
-    fn div(self, rhs: Var<'a>) -> Self::Output {
-        self * rhs.recip()
-    }
-}
-
-impl<'a> Div<f64> for Var<'a> {
-    type Output = Self;
-    fn div(self, rhs: f64) -> Self::Output {
-        self * rhs.recip()
-    }
-}
-
-impl<'a> Div<Var<'a>> for f64 {
-    type Output = Var<'a>;
-    fn div(self, rhs: Var<'a>) -> Self::Output {
-        Self::Output {
-            val: self / rhs.val,
-            location: rhs
-                .tape
-                .add_node(rhs.location, rhs.location, 0., -1. / rhs.val),
-            tape: rhs.tape,
-        }
-    }
-}
-
 /// Trait for calculating expressions and tracking gradients for float power operations.
-pub trait Powf<T> {
+pub trait Powf<Rhs = Self> {
     type Output;
+
     /// Calculate `powf` for self, where `other` is the power to raise `self` to.
-    fn powf(&self, other: T) -> Self::Output;
-}
-
-impl<'a> Powf<Var<'a>> for Var<'a> {
-    type Output = Var<'a>;
-    fn powf(&self, rhs: Var<'a>) -> Self::Output {
-        assert_eq!(self.tape as *const Tape, rhs.tape as *const Tape);
-        Self {
-            val: self.val.powf(rhs.val),
-            location: self.tape.add_node(
-                self.location,
-                rhs.location,
-                rhs.val * f64::powf(self.val, rhs.val - 1.),
-                f64::powf(self.val, rhs.val) * f64::ln(self.val),
-            ),
-            tape: self.tape,
-        }
-    }
-}
-
-impl<'a> Powf<f64> for Var<'a> {
-    type Output = Var<'a>;
-    fn powf(&self, n: f64) -> Self::Output {
-        Self {
-            val: f64::powf(self.val, n),
-            location: self.tape.add_node(
-                self.location,
-                self.location,
-                n * f64::powf(self.val, n - 1.),
-                0.,
-            ),
-            tape: self.tape,
-        }
-    }
-}
-
-impl<'a> Powf<Var<'a>> for f64 {
-    type Output = Var<'a>;
-    fn powf(&self, rhs: Var<'a>) -> Self::Output {
-        Self::Output {
-            val: f64::powf(*self, rhs.val),
-            location: rhs.tape.add_node(
-                rhs.location,
-                rhs.location,
-                0.,
-                rhs.val * f64::powf(*self, rhs.val - 1.),
-            ),
-            tape: rhs.tape,
-        }
-    }
-}
-
-impl<'a> Sum<Var<'a>> for Var<'a> {
-    fn sum<I: Iterator<Item = Var<'a>>>(iter: I) -> Self {
-        iter.reduce(|a, b| a + b).unwrap()
-    }
+    fn powf(self, other: Rhs) -> Self::Output;
 }
 
 #[cfg(test)]
@@ -865,5 +716,19 @@ mod test {
             2. * (200. * 5_f64.powi(3) - 200. * 5. * -2. + 5. - 1.)
         );
         assert_approx_eq!(grad[1], 200. * (-2. - 5_f64.powi(2)));
+    }
+
+    #[test]
+    fn test_assign() {
+        let g = Tape::new();
+        let a = g.add_var(1.);
+        let mut b = a * 1.0;
+        b *= 3.0;
+        b /= 2.0;
+        b += 5.0;
+        b -= 4.0;
+        let gradb = b.grad().wrt(&a);
+        assert_eq!(gradb, 1.5);
+        assert_eq!(b.val(), 2.5);
     }
 }
